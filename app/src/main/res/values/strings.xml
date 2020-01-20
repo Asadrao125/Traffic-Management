@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">Traffic Management</string>
+
+    <array name="type">
+
+        <item>Car</item>
+        <item>Bicycle</item>
+        <item>Wagons</item>
+
+    </array>
+    <array name="paid_type">
+
+        <item>Cash</item>
+        <item>By Challan</item>
+
+    </array>
+</resources>
