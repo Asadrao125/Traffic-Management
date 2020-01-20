@@ -30,11 +30,27 @@ public class ComplaintActivity extends AppCompatActivity {
     EditText edtName, edtAddress, edtMobile, edtDescription;
     DatabaseReference mRef;
     ProgressDialog loadingBar;
+    long counter = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_complaint);
+
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Counter");
+        ref.child("node").child("count").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                String name = dataSnapshot.getValue(String.class);
+                counter = Long.parseLong(name);
+                Toast.makeText(ComplaintActivity.this, "Count: "+name, Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -83,12 +99,14 @@ public class ComplaintActivity extends AppCompatActivity {
             loadingBar.show();
             loadingBar.setCanceledOnTouchOutside(true);
 
+            counter++;
+
             HashMap customerMap = new HashMap();
             customerMap.put("Name", name);
             customerMap.put("Address", address);
             customerMap.put("Mobile", mobile);
             customerMap.put("Description", description);
-            mRef.child(name).updateChildren(customerMap).addOnCompleteListener(new OnCompleteListener() {
+            mRef.child(String.valueOf(counter)).updateChildren(customerMap).addOnCompleteListener(new OnCompleteListener() {
                 @Override
                 public void onComplete(@NonNull Task task) {
                     if (task.isSuccessful()) {
@@ -105,6 +123,17 @@ public class ComplaintActivity extends AppCompatActivity {
                     }
                 }
             });
+
+            DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Counter");
+            HashMap map = new HashMap();
+            map.put("count", String.valueOf(counter));
+            ref.child("node").updateChildren(map).addOnCompleteListener(new OnCompleteListener() {
+                @Override
+                public void onComplete(@NonNull Task task) {
+                    Toast.makeText(ComplaintActivity.this, "Added!", Toast.LENGTH_SHORT).show();
+                }
+            });
+
         }
     }
 }

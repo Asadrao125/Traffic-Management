@@ -16,8 +16,11 @@ import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.HashMap;
 
@@ -28,11 +31,28 @@ public class MainActivity extends AppCompatActivity {
     Button btnSubmit;
     String message;
     ProgressDialog loadingBar;
+    long counter = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Challan-Counter");
+        ref.child("node").child("count").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                String name = dataSnapshot.getValue(String.class);
+                counter = Long.parseLong(name);
+                Toast.makeText(getApplicationContext(), "Count: "+name, Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -110,6 +130,8 @@ public class MainActivity extends AppCompatActivity {
 
             DatabaseReference mRef1 = FirebaseDatabase.getInstance().getReference("Chalan");
 
+            counter++;
+
             HashMap customerMap = new HashMap();
             customerMap.put("Name", name);
             customerMap.put("Contact", contact);
@@ -121,7 +143,7 @@ public class MainActivity extends AppCompatActivity {
             customerMap.put("Code", code);
             customerMap.put("Amount", amount);
             customerMap.put("Paid_Type", paidType);
-            mRef1.child(message).child(name).updateChildren(customerMap).addOnCompleteListener(new OnCompleteListener() {
+            mRef1.child(message).child(String.valueOf(counter)).updateChildren(customerMap).addOnCompleteListener(new OnCompleteListener() {
                 @Override
                 public void onComplete(@NonNull Task task) {
                     if (task.isSuccessful()) {
@@ -141,6 +163,17 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
             });
+
+            DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Chalan").child(message);
+            HashMap map = new HashMap();
+            map.put("count", String.valueOf(counter));
+            ref.child("node").updateChildren(map).addOnCompleteListener(new OnCompleteListener() {
+                @Override
+                public void onComplete(@NonNull Task task) {
+                    Toast.makeText(getApplicationContext(), "Added!", Toast.LENGTH_SHORT).show();
+                }
+            });
+
         }
     }
 }
